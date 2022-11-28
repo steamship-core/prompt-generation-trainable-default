@@ -142,6 +142,17 @@ class OpenAIModel(TrainableModel):
             )
         )
 
+    def _log_events(self, fine_tune_job):
+        training_events = fine_tune_job.get("events")
+        if training_events is not None:
+            messages = []
+            for event in sorted(training_events, key=lambda x: x.get("created_at")):
+                created_at = event.get("created_at")
+                message = event.get("message")
+                messages.append(f"created_at: {created_at} message: {message}")
+            combined_messages = '\n'.join(messages)
+            logging.info(f"Training events: {combined_messages}")
+
 
     def train_status(self, input: PluginRequest[TrainPluginInput]) -> InvocableResponse[TrainPluginOutput]:
         self._prepare_credentials()
@@ -162,12 +173,7 @@ class OpenAIModel(TrainableModel):
             f'Checking status of on training job {training_job_id}.')
         fine_tune_job = openai.FineTune.retrieve(training_job_id)
 
-        training_events = fine_tune_job.get("events")
-        if training_events is not None:
-            for event in sorted(training_events, key=lambda x: x.get("created_at")):
-                created_at = event.get("created_at")
-                message = event.get("message")
-                logging.info(f"Training event: created_at: {created_at} message: {message}")
+        self._log_events(fine_tune_job)
 
         if not self._training_job_complete(fine_tune_job):
             # Waiting on training job, not complete.  Just return current status.
@@ -189,7 +195,7 @@ class OpenAIModel(TrainableModel):
                 status=Task(
                     task_id=self.training_task_id,
                     state=TaskState.succeeded,
-                    output=training_results,
+                    output=training_results['message'],
                     remote_status_output=training_results,
                     remote_status_input=input.status.remote_status_input
                 ),

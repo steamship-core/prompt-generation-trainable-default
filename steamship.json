@@ -3,7 +3,7 @@
   "handle": "prompt-generation-trainable-default",
   "description": "Steamship's default trainable text generation, capable of fine-tuning and deploying trained text generation with no infrastructure management on your part.",
   "implementationDetails": "Current implementation uses OpenAI GPT3, with Steamship's API keys bundled in during deployment. Future implementations may swap out both the model and cloud provider, but we plan to do so preserving prior versions to avoid sudden changes in behavior for existing users.",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "author": "Steamship",
   "entrypoint": "src.api.handler",
   "public": true,
@@ -14,7 +14,7 @@
     "isTrainable": true,
     "trainingPlatform": "lambda"
   },
- "configTemplate": {
+  "configTemplate": {
     "openai_api_key": {
       "type": "string",
       "description": "An openAI API key to use."
@@ -27,6 +27,10 @@
       "type": "number",
       "description": "Controls randomness. Lower values produce higher likelihood / more predictable results; higher values produce more variety. Values between 0-1.",
       "default": 0.4
+    },
+    "tag_kind": {
+      "type": "string",
+      "description": "The tag_kind to use for training examples. The block text referenced by the tag will be used as the prompt; the string_value of the tag value will be used as the completion."
     }
   },
   "steamshipRegistry": {
