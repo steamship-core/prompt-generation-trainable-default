@@ -27,20 +27,19 @@ from steamship.plugin.request import PluginRequest
 from steamship.plugin.tagger import TrainableTagger
 from steamship.plugin.trainable_model import TrainableModel
 
-# If this isn't present, Localstack won't show logs
-from config import GCPConfig
-from model import VertexAIModel
+from config import PromptGenerationTrainablePluginConfig
+from model import OpenAIModel
 
 logging.getLogger().setLevel(logging.INFO)
 
 
-class GCPVertexAITrainableTaggerPlugin(TrainableTagger):
+class PromptGenerationTrainablePlugin(TrainableTagger):
     """Plugin Wrapper for the `VertexAIModel`.
 
     This wrapper class translates the plugin lifecycle requests from Steamship into `VertexAIModel` object calls.
     """
 
-    config: GCPConfig
+    config: PromptGenerationTrainablePluginConfig
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -53,17 +52,7 @@ class GCPVertexAITrainableTaggerPlugin(TrainableTagger):
         be present.
         """
         latebound_variables = [
-            "project_id",
-            "private_key_id",
-            "private_key",
-            "client_email",
-            "client_id",
-            "auth_uri",
-            "token_uri",
-            "auth_provider_x509_cert_url",
-            "client_x509_cert_url",
-            "region",
-            "training_data_bucket",
+            "openai_api_key",
         ]
         for varname in latebound_variables:
             val = getattr(self.config, varname)
@@ -72,13 +61,13 @@ class GCPVertexAITrainableTaggerPlugin(TrainableTagger):
 
 
     def config_cls(self) -> Type[Config]:
-        return GCPConfig
+        return PromptGenerationTrainablePluginConfig
 
-    def model_cls(self) -> Type[VertexAIModel]:
-        return VertexAIModel
+    def model_cls(self) -> Type[OpenAIModel]:
+        return OpenAIModel
 
     def run_with_model(
-        self, request: PluginRequest[BlockAndTagPluginInput], model: VertexAIModel
+        self, request: PluginRequest[BlockAndTagPluginInput], model: OpenAIModel
     ) -> InvocableResponse[BlockAndTagPluginOutput]:
         """Run the tag request with the given model file."""
         logging.debug(f"run_with_model {request} {model}")
@@ -91,9 +80,9 @@ class GCPVertexAITrainableTaggerPlugin(TrainableTagger):
         # Since it's AutoML, I don't have to care about this!
         return InvocableResponse(json=TrainingParameterPluginOutput.from_input(request.data))
 
-    def train(self, request: PluginRequest[TrainPluginInput], model: VertexAIModel) -> InvocableResponse[TrainPluginOutput]:
+    def train(self, request: PluginRequest[TrainPluginInput], model: OpenAIModel) -> InvocableResponse[TrainPluginOutput]:
         """Instruct the model to begin training."""
-        logging.info(f"gcp-automl-trainer received train request {request}")
+        logging.info(f"Trainable prompt generation received train request {request}")
         model.training_task_id = request.status.task_id
         return model.train(request.data)
 
@@ -101,7 +90,7 @@ class GCPVertexAITrainableTaggerPlugin(TrainableTagger):
             self, request: PluginRequest[TrainPluginInput], model: TrainableModel
     ) -> InvocableResponse[TrainPluginOutput]:
         """Fetch status of the training job."""
-        logging.info(f"gcp-automl-trainer received train_status request {request}")
+        logging.info(f"Trainable prompt generation received train_status request {request}")
 
         model.training_task_id = request.status.task_id
         train_plugin_output_response = model.train_status(request)
@@ -119,4 +108,3 @@ class GCPVertexAITrainableTaggerPlugin(TrainableTagger):
         return train_plugin_output_response
 
 
-handler = create_handler(GCPVertexAITrainableTaggerPlugin)

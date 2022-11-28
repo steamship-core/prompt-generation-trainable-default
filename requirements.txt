@@ -1,4 +1,4 @@
-steamship===2.2.0
-google-cloud-aiplatform==1.18.3
+steamship==2.2.1rc0
+openai==0.25.0
 jsonlines==3.0.0
 requests-file==1.5.1

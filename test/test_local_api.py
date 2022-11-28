@@ -17,8 +17,8 @@ from steamship.plugin.outputs.block_and_tag_plugin_output import \
     BlockAndTagPluginOutput
 from steamship.plugin.request import PluginRequest
 
-from src.api import GCPVertexAITrainableTaggerPlugin
-from src.model import ThirdPartyTrainingStatus, VertexAIModel
+from src.api import PromptGenerationTrainablePlugin
+from src.model import ThirdPartyTrainingStatus, OpenAIModel
 
 __copyright__ = "Steamship"
 __license__ = "MIT"
@@ -32,10 +32,10 @@ def _load_config() -> dict:
         config = json.load(config_file)
     return config
 
-def _load_vertex_model() -> VertexAIModel:
-    _temp_tagger = GCPVertexAITrainableTaggerPlugin(config=_load_config())
+def _load_vertex_model() -> OpenAIModel:
+    _temp_tagger = PromptGenerationTrainablePlugin(config=_load_config())
     model_folder = Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'test_data'))
-    model = VertexAIModel()
+    model = OpenAIModel()
     model.receive_config(_temp_tagger.config)
     model.load_from_folder(model_folder)
     return model
@@ -45,9 +45,9 @@ def test_init():
 
 def test_run():
     model = _load_vertex_model()
-    assert model.endpoint_path is not None
+    assert model.fine_tuned_model_name is not None
 
-    tagger = GCPVertexAITrainableTaggerPlugin(config=_load_config())
+    tagger = PromptGenerationTrainablePlugin(config=_load_config())
     test_request = PluginRequest(data=BlockAndTagPluginInput(file=File(blocks=[Block(text="I got a high score on my math final!"), Block(text="I like to camp on the weekends")])))
     output : InvocableResponse[BlockAndTagPluginOutput] = tagger.run_with_model( test_request, model)
 
@@ -117,8 +117,8 @@ def test_data_done_start_model_deploy():
         status=tpo.status
     )
 
-    with patch.object(VertexAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
-        with patch.object(VertexAIModel, '_start_training', _start_training):
+    with patch.object(OpenAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
+        with patch.object(OpenAIModel, '_start_training', _start_training):
             # Test that the patch worked.
             model = _load_vertex_model()
             assert model._is_awaiting_dataset_deployment(tpo.status.remote_status_input.get('dataset_start_time')) is False
@@ -162,9 +162,9 @@ def test_training_in_progress():
         status=tpo.status
     )
 
-    with patch.object(VertexAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
-        with patch.object(VertexAIModel, '_start_training', _start_training):
-            with patch.object(VertexAIModel, '_training_job_complete', _training_job_complete):
+    with patch.object(OpenAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
+        with patch.object(OpenAIModel, '_start_training', _start_training):
+            with patch.object(OpenAIModel, '_training_job_complete', _training_job_complete):
                 # Test that the patch worked.
                 model = _load_vertex_model()
                 assert model._is_awaiting_dataset_deployment(tpo.status.remote_status_input.get('dataset_start_time')) is False
@@ -215,11 +215,11 @@ def test_endpoint_deploy_init():
         status=tpo.status
     )
 
-    with patch.object(VertexAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
-        with patch.object(VertexAIModel, '_training_job_complete', _training_job_complete):
-            with patch.object(VertexAIModel, '_get_model_handle', _get_model_handle):
-                with patch.object(VertexAIModel, '_get_endpoint_handle', _get_endpoint_handle):
-                    with patch.object(VertexAIModel, '_deploy_endpoint', _deploy_endpoint):
+    with patch.object(OpenAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
+        with patch.object(OpenAIModel, '_training_job_complete', _training_job_complete):
+            with patch.object(OpenAIModel, '_get_model_handle', _get_model_handle):
+                with patch.object(OpenAIModel, '_get_endpoint_handle', _get_endpoint_handle):
+                    with patch.object(OpenAIModel, '_deploy_endpoint', _deploy_endpoint):
                         # Test that the patch worked.
                         model = _load_vertex_model()
                         assert model._is_awaiting_dataset_deployment(tpo.status.remote_status_input.get('dataset_start_time')) is False
@@ -271,11 +271,11 @@ def test_endpoint_deploy_in_progress():
         status=tpo.status
     )
 
-    with patch.object(VertexAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
-        with patch.object(VertexAIModel, '_training_job_complete', _training_job_complete):
-            with patch.object(VertexAIModel, '_get_model_handle', _get_model_handle):
-                with patch.object(VertexAIModel, '_get_endpoint_handle', _get_endpoint_handle):
-                    with patch.object(VertexAIModel, '_is_endpoint_deploy_complete', _is_endpoint_deploy_complete):
+    with patch.object(OpenAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
+        with patch.object(OpenAIModel, '_training_job_complete', _training_job_complete):
+            with patch.object(OpenAIModel, '_get_model_handle', _get_model_handle):
+                with patch.object(OpenAIModel, '_get_endpoint_handle', _get_endpoint_handle):
+                    with patch.object(OpenAIModel, '_is_endpoint_deploy_complete', _is_endpoint_deploy_complete):
                         # Test that the patch worked.
                         model = _load_vertex_model()
                         assert model._is_awaiting_dataset_deployment(tpo.status.remote_status_input.get('dataset_start_time')) is False
@@ -330,11 +330,11 @@ def test_endpoint_deploy_complete():
         status=tpo.status
     )
 
-    with patch.object(VertexAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
-        with patch.object(VertexAIModel, '_training_job_complete', _training_job_complete):
-            with patch.object(VertexAIModel, '_get_model_handle', _get_model_handle):
-                with patch.object(VertexAIModel, '_get_endpoint_handle', _get_endpoint_handle):
-                    with patch.object(VertexAIModel, '_is_endpoint_deploy_complete', _is_endpoint_deploy_complete):
+    with patch.object(OpenAIModel, '_is_awaiting_dataset_deployment', _is_awaiting_dataset_deployment):
+        with patch.object(OpenAIModel, '_training_job_complete', _training_job_complete):
+            with patch.object(OpenAIModel, '_get_model_handle', _get_model_handle):
+                with patch.object(OpenAIModel, '_get_endpoint_handle', _get_endpoint_handle):
+                    with patch.object(OpenAIModel, '_is_endpoint_deploy_complete', _is_endpoint_deploy_complete):
                         # We'll intentionally not patch the model evaluation to see if the error handling works.
                         # Test that the patch worked.
                         model = _load_vertex_model()

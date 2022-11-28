@@ -1,10 +1,9 @@
 {
   "type": "plugin",
-  "handle": "trainable-tagger-default",
-  "description": "Steamship's default trainable tagger, capable of training and deploying a supervised text classifier with no infrastructure management on your part.",
-  "implementationDetails": "Current implementation uses Google's Vertex AutoML, with Steamship's API keys bundled in during deployment. Future implementations may swap out both the model and cloud provider, but we plan to do so preserving prior versions to avoid sudden changes in behavior for existing users.",
-  "version": "1.0.5",
-  "platform": "local",
+  "handle": "prompt-generation-trainable-default",
+  "description": "Steamship's default trainable text generation, capable of fine-tuning and deploying trained text generation with no infrastructure management on your part.",
+  "implementationDetails": "Current implementation uses OpenAI GPT3, with Steamship's API keys bundled in during deployment. Future implementations may swap out both the model and cloud provider, but we plan to do so preserving prior versions to avoid sudden changes in behavior for existing users.",
+  "version": "0.0.1",
   "author": "Steamship",
   "entrypoint": "src.api.handler",
   "public": true,
@@ -15,96 +14,39 @@
     "isTrainable": true,
     "trainingPlatform": "lambda"
   },
-  "configTemplate": {
-    "project_id": {
+ "configTemplate": {
+    "openai_api_key": {
       "type": "string",
-      "description": "Your GCP project id",
-      "default": ""
+      "description": "An openAI API key to use."
     },
-    "private_key_id": {
-      "type": "string",
-      "description": "private_key_id from your GCP service account credentials file",
-      "default": ""
+    "max_words": {
+      "type": "number",
+      "description": "The maximum number of words to generate per request"
     },
-    "private_key": {
-      "type": "string",
-      "description": "private_key from your GCP service account credentials file",
-      "default": ""
-    },
-    "client_email": {
-      "type": "string",
-      "description": "client_email from your GCP service account credentials file",
-      "default": ""
-    },
-    "client_id": {
-      "type": "string",
-      "description": "client_id from your GCP service account credentials file",
-      "default": ""
-    },
-    "auth_uri": {
-      "type": "string",
-      "description": "auth_uri from your GCP service account credentials file",
-      "default": ""
-    },
-    "token_uri": {
-      "type": "string",
-      "description": "token_uri from your GCP service account credentials file",
-      "default": ""
-    },
-    "auth_provider_x509_cert_url": {
-      "type": "string",
-      "description": "auth_provider_x509_cert_url from your GCP service account credentials file",
-      "default": ""
-    },
-    "client_x509_cert_url": {
-      "type": "string",
-      "description": "client_x509_cert_url from your GCP service account credentials file",
-      "default": ""
-    },
-    "region": {
-      "type": "string",
-      "description": "the GCP region for your model and endpoint",
-      "default": ""
-    },
-    "training_data_bucket": {
-      "type": "string",
-      "description": "the GCP bucket name for uploaded training data",
-      "default": ""
-    },
-    "single_or_multi_label": {
-      "type": "string",
-      "description": "Single or multi class classification; should be value 'single' or 'multi'"
-    },
-    "tag_kind": {
-      "type": "string",
-      "description": "The tag kind whose tag name values will be learned / predicted"
-    },
-    "include_tag_names": {
-      "type": "string",
-      "description": "A comma-separated list of Tag names to include for classification.  If this is omitted, all tag names of the specified tag kind will be used.",
-      "default": ""
+    "temperature": {
+      "type": "number",
+      "description": "Controls randomness. Lower values produce higher likelihood / more predictable results; higher values produce more variety. Values between 0-1.",
+      "default": 0.4
     }
   },
   "steamshipRegistry": {
-    "tagline": "Train and use an AutoML tagger with Google Vertex AI.",
+    "tagline": "Train and use text generation with OpenAI's GPT3.",
     "tagline2": "Just specify which tags in Steamship to train on, then generate more of the same.",
-    "usefulFor": "Useful for high-performance text classification when training data is available.",
+    "usefulFor": "Useful for generating text in a specific style when training data is available.",
     "videoUrl": null,
-    "githubUrl": "https://github.com/steamship-plugins/tagger-trainable-classifier-gcp-vertexai",
+    "githubUrl": "https://github.com/steamship-plugins/prompt-generation-trainable-default",
     "demoUrl": null,
     "blogUrl": null,
-    "jupyterUrl": "https://github.com/steamship-plugins/tagger-trainable-classifier-gcp-vertexai/example/python-client-vertex-ai-tagger.ipynb",
+    "jupyterUrl": null,
     "authorName": "Steamship",
     "authorEmail": "hello@steamship.com",
     "authorTwitter": "@GetSteamship",
     "authorUrl": "https://www.steamship.com/",
     "tags": [
-      "Classifier",
+      "Generator",
       "Trainable",
-      "Google",
-      "AutoML",
-      "Intent Classification",
-      "Text Classification"
+      "OpenAI",
+      "GPT3"
     ]
   }
 }
