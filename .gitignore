@@ -1,0 +1,10 @@
+.venv
+.idea
+.DS_Store
+build/
+.ipynb_checkpoints/
+/test_data/test_config.json
+venv
+__pycache__
+src/resources/*.json
+src/.steamship/secrets.toml

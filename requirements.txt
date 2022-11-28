@@ -1,0 +1,4 @@
+steamship===2.2.0
+google-cloud-aiplatform==1.18.3
+jsonlines==3.0.0
+requests-file==1.5.1
