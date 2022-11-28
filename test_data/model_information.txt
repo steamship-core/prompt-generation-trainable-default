@@ -1,1 +1,1 @@
-projects/667056105962/locations/us-central1/endpoints/8196929553814257664
+curie:ft-steamship:tst9b7521e4-f196-4bfd-8b55-18c426b14825-2022-11-28-18-28-25

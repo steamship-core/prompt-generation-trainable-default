@@ -79,7 +79,7 @@ class OpenAIModel(TrainableModel):
 
     def _training_job_complete(self, job: FineTune) -> bool:
         status = job.get("status")
-        if status in ['pending']:
+        if status in ['pending', 'running']:
             return False
         elif status == "succeeded":
             return True
@@ -106,10 +106,11 @@ class OpenAIModel(TrainableModel):
                 for block in file.blocks:
                     #logging.info(f"Processing block: {block}")
                     tags = self._find_training_tags(block)
-                    example = self._format_examples(tags, block)
-                    if example is not None:
-                        writer.write(example)
-                        num_examples += len(tags)
+                    examples = self._format_examples(tags, block)
+                    if examples is not None:
+                        for example in examples:
+                            writer.write(example)
+                            num_examples += 1
         logging.info(f"Found {num_examples} training examples")
         training_data_content = data_to_upload.getvalue()
 
@@ -161,6 +162,12 @@ class OpenAIModel(TrainableModel):
             f'Checking status of on training job {training_job_id}.')
         fine_tune_job = openai.FineTune.retrieve(training_job_id)
 
+        training_events = fine_tune_job.get("events")
+        if training_events is not None:
+            for event in sorted(training_events, key=lambda x: x.get("created_at")):
+                created_at = event.get("created_at")
+                message = event.get("message")
+                logging.info(f"Training event: created_at: {created_at} message: {message}")
 
         if not self._training_job_complete(fine_tune_job):
             # Waiting on training job, not complete.  Just return current status.

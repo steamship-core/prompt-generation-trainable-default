@@ -27,8 +27,8 @@ from steamship.plugin.request import PluginRequest
 from steamship.plugin.tagger import TrainableTagger
 from steamship.plugin.trainable_model import TrainableModel
 
-from config import PromptGenerationTrainablePluginConfig
-from model import OpenAIModel
+from .config import PromptGenerationTrainablePluginConfig
+from .model import OpenAIModel
 
 logging.getLogger().setLevel(logging.INFO)
 
