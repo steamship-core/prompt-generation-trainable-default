@@ -9,5 +9,7 @@ class PromptGenerationTrainablePluginConfig(Config):
     max_words: int
     temperature: float
     tag_kind: str
+    num_completions: int
+
 
 

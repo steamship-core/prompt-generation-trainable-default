@@ -33,8 +33,11 @@ def test_e2e_trainable_tagger_lambda_training():
     with open(os.path.join(folder, '..', 'test_data', 'test_config.json'), 'r') as config_file:
         config = json.load(config_file)
 
+    config['num_completions'] = 2
+
     trainable_tagger = client.use_plugin(
         plugin_handle=PLUGIN_HANDLE,
+        version='0.0.13',
         config=config,
     )
 
@@ -47,12 +50,15 @@ def test_e2e_trainable_tagger_lambda_training():
         export_plugin_input=ExportPluginInput(
             plugin_instance=EXPORTER_HANDLE, type="file", query="blocktag",
         ),
-        training_params={},
+        training_epochs = 2,
+        training_params={
+            "model":"babbage"
+        },
     )
 
     train_result = trainable_tagger.train(training_request)
 
-    train_result.wait(max_timeout_s=300, retry_delay_s=10)
+    train_result.wait(max_timeout_s=500, retry_delay_s=10)
 
     test_file = File.create(client, blocks=[Block.CreateRequest(text="Gimme an X!"), Block.CreateRequest(text="Gimme a Y!")])
     tag_task = test_file.tag(trainable_tagger.handle)
@@ -60,7 +66,9 @@ def test_e2e_trainable_tagger_lambda_training():
 
     test_file.refresh()
     assert len(test_file.blocks) == 2
-    assert len(test_file.blocks[0].tags) == 1
+    assert len(test_file.blocks[0].tags) == 2
+    print(test_file.blocks[0].tags[0].value.get(TagValue.STRING_VALUE.value))
     assert "X!" in test_file.blocks[0].tags[0].value.get(TagValue.STRING_VALUE.value)
-    assert len(test_file.blocks[1].tags) == 1
+    assert len(test_file.blocks[1].tags) == 2
+    print(test_file.blocks[1].tags[0].value.get(TagValue.STRING_VALUE.value))
     assert "Y!" in test_file.blocks[1].tags[0].value.get(TagValue.STRING_VALUE.value)

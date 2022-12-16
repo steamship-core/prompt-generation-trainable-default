@@ -22,6 +22,7 @@ from steamship.plugin.outputs.block_and_tag_plugin_output import \
 from steamship.plugin.outputs.train_plugin_output import TrainPluginOutput
 from steamship.plugin.request import PluginRequest
 from steamship.plugin.trainable_model import TrainableModel
+from steamship.utils.url import apply_localstack_url_fix
 
 
 class ThirdPartyTrainingStatus(str, Enum):
@@ -94,7 +95,8 @@ class OpenAIModel(TrainableModel):
         # So that requests can fetch the test training file from a file:// url
         requests_session = requests.session()
         requests_session.mount('file://', FileAdapter())
-        response = requests_session.get(input.training_data_url)
+        training_data_url = apply_localstack_url_fix(input.training_data_url)
+        response = requests_session.get(training_data_url)
         training_files = [File.parse_obj(json.loads(line)) for line in response.content.splitlines()]
 
         logging.info("Converting training set to appropriate format")
@@ -119,8 +121,19 @@ class OpenAIModel(TrainableModel):
         file_upload_response = openai.File.create(file=io.StringIO(training_data_content), purpose="fine-tune", user_provided_filename=self.training_task_id)
         logging.info(f"Uploaded training file successfully. ID: {file_upload_response.openai_id}")
 
+        fine_tune_param_dict = {
+            'training_file': file_upload_response.openai_id,
+            'suffix': self.training_task_id,
+        }
+        if input.training_epochs is not None:
+            fine_tune_param_dict['n_epochs'] = input.training_epochs
+
+        fine_tune_param_dict.update(input.training_params)
+
         logging.info("Beginning fine-tuning job")
-        fine_tune_job = openai.FineTune.create(training_file=file_upload_response.openai_id, suffix=self.training_task_id)
+        fine_tune_job = openai.FineTune.create(
+            **fine_tune_param_dict
+        )
         training_job_id = fine_tune_job.openai_id
         logging.info(f"Fine tuning job started. ID: {training_job_id}")
 
@@ -206,11 +219,12 @@ class OpenAIModel(TrainableModel):
                 )
             )
 
-    def _generate_text_for(self, text_prompt: str) -> str:
+    def _generate_texts_for(self, text_prompt: str) -> [str]:
         """Call the API to generate the next section of text."""
         completion = openai.Completion.create(model=self.fine_tuned_model_name, prompt=text_prompt,
-                                              temperature=self.config.temperature, max_tokens=self.config.max_words)
-        return completion.choices[0].text
+                                              temperature=self.config.temperature, max_tokens=self.config.max_words,
+                                              n=self.config.num_completions)
+        return [choice.text for choice in completion.choices]
 
     def run(self, request: PluginRequest[BlockAndTagPluginInput]) -> InvocableResponse[BlockAndTagPluginOutput]:
         """Run the text generator against all Blocks of text.
@@ -224,9 +238,10 @@ class OpenAIModel(TrainableModel):
         output = BlockAndTagPluginOutput(file=File.CreateRequest(id=request_file.id), tags=[])
         for block in request.data.file.blocks:
             text = block.text
-            generated_text = self._generate_text_for(text)
+            generated_texts = self._generate_texts_for(text)
             tags = [Tag.CreateRequest(kind=TagKind.GENERATION, name=GenerationTag.PROMPT_COMPLETION,
-                                      value={TagValue.STRING_VALUE: generated_text})]
+                                      value={TagValue.STRING_VALUE: generated_text})
+                    for generated_text in generated_texts]
             output_block = Block.CreateRequest(id=block.id, tags=tags)
             output.file.blocks.append(output_block)
 
