@@ -52,6 +52,7 @@
     "authorEmail": "hello@steamship.com",
     "authorTwitter": "@GetSteamship",
     "authorUrl": "https://www.steamship.com/",
+    "authorGithub": "dkolas",
     "tags": [
       "Generator",
       "Trainable",
