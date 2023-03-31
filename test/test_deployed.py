@@ -37,7 +37,7 @@ def test_e2e_trainable_tagger_lambda_training():
 
     trainable_tagger = client.use_plugin(
         plugin_handle=PLUGIN_HANDLE,
-        version='0.0.14',
+        version='0.0.18',
         config=config,
     )
 
@@ -58,6 +58,7 @@ def test_e2e_trainable_tagger_lambda_training():
 
     train_result = trainable_tagger.train(training_request)
 
+    # This wait may not be long enough; training jobs can take a long time
     train_result.wait(max_timeout_s=500, retry_delay_s=10)
 
     test_file = File.create(client, blocks=[Block(text="Gimme an X!"), Block(text="Gimme a Y!")])

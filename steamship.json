@@ -1,7 +1,7 @@
 {
 	"type": "plugin",
 	"handle": "prompt-generation-trainable-default",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"description": "Steamship's default trainable text generation, capable of fine-tuning and deploying trained text generation with no infrastructure management on your part.",
 	"author": "Steamship",
 	"entrypoint": "src.api.handler",

@@ -73,7 +73,7 @@ class OpenAIModel(TrainableModel):
             logging.warning(f"Warning: Skipping block with no tags. id={block.id} text={block.text}")
             return None
         return [dict(
-            completion=tag.value.get(TagValue.STRING_VALUE, None),
+            completion=tag.value.get(TagValueKey.STRING_VALUE, None),
             prompt=block.text[tag.start_idx:tag.end_idx]
             ) for tag in tags]
 
