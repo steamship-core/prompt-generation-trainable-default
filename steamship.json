@@ -1,63 +1,65 @@
 {
-  "type": "plugin",
-  "handle": "prompt-generation-trainable-default",
-  "description": "Steamship's default trainable text generation, capable of fine-tuning and deploying trained text generation with no infrastructure management on your part.",
-  "implementationDetails": "Current implementation uses OpenAI GPT3, with Steamship's API keys bundled in during deployment. Future implementations may swap out both the model and cloud provider, but we plan to do so preserving prior versions to avoid sudden changes in behavior for existing users.",
-  "version": "0.0.13",
-  "author": "Steamship",
-  "entrypoint": "src.api.handler",
-  "public": true,
-  "plugin": {
-    "type": "tagger",
-    "path": "/tag",
-    "transport": "jsonOverHttp",
-    "isTrainable": true,
-    "trainingPlatform": "lambda"
-  },
-  "configTemplate": {
-    "openai_api_key": {
-      "type": "string",
-      "description": "An openAI API key to use. If left default, will use Steamship's API key.",
-      "default": ""
-    },
-    "max_words": {
-      "type": "number",
-      "description": "The maximum number of words to generate per request"
-    },
-    "temperature": {
-      "type": "number",
-      "description": "Controls randomness. Lower values produce higher likelihood / more predictable results; higher values produce more variety. Values between 0-1.",
-      "default": 0.4
-    },
-    "tag_kind": {
-      "type": "string",
-      "description": "The tag_kind to use for training examples. The block text referenced by the tag will be used as the prompt; the string_value of the tag value will be used as the completion."
-    },
-    "num_completions": {
-      "type": "number",
-      "description": "The number of returned completion alternatives per request",
-      "default": 1
-    }
-  },
-  "steamshipRegistry": {
-    "tagline": "Train and use text generation with OpenAI's GPT3.",
-    "tagline2": "Just specify which tags in Steamship to train on, then generate more of the same.",
-    "usefulFor": "Useful for generating text in a specific style when training data is available.",
-    "videoUrl": null,
-    "githubUrl": "https://github.com/steamship-plugins/prompt-generation-trainable-default",
-    "demoUrl": null,
-    "blogUrl": null,
-    "jupyterUrl": null,
-    "authorName": "Steamship",
-    "authorEmail": "hello@steamship.com",
-    "authorTwitter": "@GetSteamship",
-    "authorUrl": "https://www.steamship.com/",
-    "authorGithub": "dkolas",
-    "tags": [
-      "Generator",
-      "Trainable",
-      "OpenAI",
-      "GPT3"
-    ]
-  }
+	"type": "plugin",
+	"handle": "prompt-generation-trainable-default",
+	"version": "0.0.17",
+	"description": "Steamship's default trainable text generation, capable of fine-tuning and deploying trained text generation with no infrastructure management on your part.",
+	"author": "Steamship",
+	"entrypoint": "src.api.handler",
+	"public": true,
+	"plugin": {
+		"isTrainable": true,
+		"transport": "jsonOverHttp",
+		"type": "tagger"
+	},
+	"build_config": {
+		"ignore": []
+	},
+	"configTemplate": {
+		"openai_api_key": {
+			"type": "string",
+			"description": "An openAI API key to use. If left default, will use Steamship's API key.",
+			"default": ""
+		},
+		"max_words": {
+			"type": "number",
+			"description": "The maximum number of words to generate per request",
+			"default": null
+		},
+		"temperature": {
+			"type": "number",
+			"description": "Controls randomness. Lower values produce higher likelihood / more predictable results; higher values produce more variety. Values between 0-1.",
+			"default": 0.4
+		},
+		"tag_kind": {
+			"type": "string",
+			"description": "The tag_kind to use for training examples. The block text referenced by the tag will be used as the prompt; the string_value of the tag value will be used as the completion.",
+			"default": null
+		},
+		"num_completions": {
+			"type": "number",
+			"description": "The number of returned completion alternatives per request",
+			"default": 1
+		}
+	},
+	"steamshipRegistry": {
+		"tagline": "Train and use text generation with OpenAI's GPT3.",
+		"tagline2": "Just specify which tags in Steamship to train on, then generate more of the same.",
+		"usefulFor": "Useful for generating text in a specific style when training data is available.",
+		"videoUrl": null,
+		"githubUrl": "https://github.com/steamship-plugins/prompt-generation-trainable-default",
+		"demoUrl": null,
+		"blogUrl": null,
+		"jupyterUrl": null,
+		"authorGithub": "dkolas",
+		"authorName": "Steamship",
+		"authorEmail": "hello@steamship.com",
+		"authorTwitter": "@GetSteamship",
+		"authorUrl": "https://www.steamship.com/",
+		"tags": [
+			"Generator",
+			"Trainable",
+			"OpenAI",
+			"GPT3"
+		]
+	}
 }

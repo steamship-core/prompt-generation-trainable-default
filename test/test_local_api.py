@@ -10,7 +10,7 @@ from unittest.mock import patch
 import requests
 from requests_file import FileAdapter
 from steamship import Block, File, Tag, Task, TaskState
-from steamship.data import TagValue
+from steamship.data import TagValueKey
 from steamship.invocable import InvocableResponse
 from steamship.plugin.inputs.block_and_tag_plugin_input import \
     BlockAndTagPluginInput
@@ -58,9 +58,9 @@ def test_run():
     assert file is not None
     assert len(file.blocks) == 2
     assert len(file.blocks[0].tags) == 1
-    assert "X!" in file.blocks[0].tags[0].value.get(TagValue.STRING_VALUE.value)
+    assert "X!" in file.blocks[0].tags[0].value.get(TagValueKey.STRING_VALUE.value)
     assert len(file.blocks[1].tags) == 1
-    assert "Y!" in file.blocks[1].tags[0].value.get(TagValue.STRING_VALUE.value)
+    assert "Y!" in file.blocks[1].tags[0].value.get(TagValueKey.STRING_VALUE.value)
 
 
 def test_train():

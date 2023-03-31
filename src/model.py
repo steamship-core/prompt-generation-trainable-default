@@ -12,7 +12,7 @@ import requests
 from openai import FineTune
 from requests_file import FileAdapter
 from steamship import Block, File, SteamshipError, Tag, Task, TaskState
-from steamship.data import TagValue, TagKind, GenerationTag
+from steamship.data import TagKind, GenerationTag, TagValueKey
 from steamship.invocable.invocable_response import InvocableResponse
 from steamship.plugin.inputs.block_and_tag_plugin_input import \
     BlockAndTagPluginInput
@@ -240,7 +240,7 @@ class OpenAIModel(TrainableModel):
             text = block.text
             generated_texts = self._generate_texts_for(text)
             tags = [Tag.CreateRequest(kind=TagKind.GENERATION, name=GenerationTag.PROMPT_COMPLETION,
-                                      value={TagValue.STRING_VALUE: generated_text})
+                                      value={TagValueKey.STRING_VALUE: generated_text})
                     for generated_text in generated_texts]
             output_block = Block.CreateRequest(id=block.id, tags=tags)
             output.file.blocks.append(output_block)

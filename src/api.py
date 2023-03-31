@@ -11,7 +11,7 @@ import logging
 from typing import Type
 
 from steamship import SteamshipError, TaskState
-from steamship.invocable import Config, create_handler
+from steamship.invocable import Config
 from steamship.invocable.invocable_response import InvocableResponse
 from steamship.plugin.inputs.block_and_tag_plugin_input import \
     BlockAndTagPluginInput
@@ -60,7 +60,8 @@ class PromptGenerationTrainablePlugin(TrainableTagger):
                 raise SteamshipError(message=f"The {varname} parameter was not found but is required for operation.")
 
 
-    def config_cls(self) -> Type[Config]:
+    @classmethod
+    def config_cls(cls) -> Type[Config]:
         return PromptGenerationTrainablePluginConfig
 
     def model_cls(self) -> Type[OpenAIModel]:

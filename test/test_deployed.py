@@ -5,7 +5,7 @@ import uuid
 
 from steamship import Block, File, Tag
 from steamship.client import Steamship
-from steamship.data import TagValue
+from steamship.data import TagValueKey
 from steamship.plugin.inputs.export_plugin_input import ExportPluginInput
 from steamship.plugin.inputs.training_parameter_plugin_input import \
     TrainingParameterPluginInput
@@ -14,12 +14,12 @@ PLUGIN_HANDLE = "prompt-generation-trainable-default"
 EXPORTER_HANDLE = "signed-url-exporter-1.0"
 KEYWORDS = ["product", "coupon"]
 
-def create_example_blocks() -> [Block.CreateRequest]:
+def create_example_blocks() -> [Block]:
     blocks = []
     for letter in "STEAMSHIP":
-        block = Block.CreateRequest(text=f'Gimme a {letter}!')
+        block = Block(text=f'Gimme a {letter}!')
         block.tags = [Tag(kind="training_generation", startIdx=0, endIdx=len(block.text),
-                          value={TagValue.STRING_VALUE.value: letter})]
+                          value={TagValueKey.STRING_VALUE.value: letter})]
         blocks.append(block)
     return blocks
 
@@ -37,7 +37,7 @@ def test_e2e_trainable_tagger_lambda_training():
 
     trainable_tagger = client.use_plugin(
         plugin_handle=PLUGIN_HANDLE,
-        version='0.0.13',
+        version='0.0.14',
         config=config,
     )
 
@@ -60,15 +60,15 @@ def test_e2e_trainable_tagger_lambda_training():
 
     train_result.wait(max_timeout_s=500, retry_delay_s=10)
 
-    test_file = File.create(client, blocks=[Block.CreateRequest(text="Gimme an X!"), Block.CreateRequest(text="Gimme a Y!")])
+    test_file = File.create(client, blocks=[Block(text="Gimme an X!"), Block(text="Gimme a Y!")])
     tag_task = test_file.tag(trainable_tagger.handle)
     tag_task.wait()
 
     test_file.refresh()
     assert len(test_file.blocks) == 2
     assert len(test_file.blocks[0].tags) == 2
-    print(test_file.blocks[0].tags[0].value.get(TagValue.STRING_VALUE.value))
-    assert "X!" in test_file.blocks[0].tags[0].value.get(TagValue.STRING_VALUE.value)
+    print(test_file.blocks[0].tags[0].value.get(TagValueKey.STRING_VALUE.value))
+    assert "X!" in test_file.blocks[0].tags[0].value.get(TagValueKey.STRING_VALUE.value)
     assert len(test_file.blocks[1].tags) == 2
-    print(test_file.blocks[1].tags[0].value.get(TagValue.STRING_VALUE.value))
-    assert "Y!" in test_file.blocks[1].tags[0].value.get(TagValue.STRING_VALUE.value)
+    print(test_file.blocks[1].tags[0].value.get(TagValueKey.STRING_VALUE.value))
+    assert "Y!" in test_file.blocks[1].tags[0].value.get(TagValueKey.STRING_VALUE.value)
