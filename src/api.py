@@ -8,10 +8,11 @@ In this example, we have three classes:
 - ThirdPartyTrainableTaggerPlugin -- Plugin-wrapper around the ThirdPartyModel
 """
 import logging
-from typing import Type
+from typing import Type, Dict, Any
 
-from steamship import SteamshipError, TaskState
-from steamship.invocable import Config
+from pydantic import Field
+from steamship import SteamshipError, TaskState, Steamship
+from steamship.invocable import Config, InvocationContext
 from steamship.invocable.invocable_response import InvocableResponse
 from steamship.plugin.inputs.block_and_tag_plugin_input import \
     BlockAndTagPluginInput
@@ -27,7 +28,6 @@ from steamship.plugin.request import PluginRequest
 from steamship.plugin.tagger import TrainableTagger
 from steamship.plugin.trainable_model import TrainableModel
 
-from config import PromptGenerationTrainablePluginConfig
 from model import OpenAIModel
 
 logging.getLogger().setLevel(logging.INFO)
@@ -39,30 +39,29 @@ class PromptGenerationTrainablePlugin(TrainableTagger):
     This wrapper class translates the plugin lifecycle requests from Steamship into `VertexAIModel` object calls.
     """
 
+    class PromptGenerationTrainablePluginConfig(Config):
+        openai_api_key: str = Field("",
+                                    description="An openAI API key to use. If left default, will use Steamship's API key.")
+        max_words: int = Field(description="The maximum number of words to generate per request")
+        temperature: float = Field(0.4,
+                                   description="Controls randomness. Lower values produce higher likelihood / more predictable results; higher values produce more variety. Values between 0-1.")
+        tag_kind: str = Field(
+            description="The tag_kind to use for training examples. The block text referenced by the tag will be used as the prompt; the string_value of the tag value will be used as the completion.")
+        num_completions: int = Field(1, description="The number of returned completion alternatives per request")
+
     config: PromptGenerationTrainablePluginConfig
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._validate_latebound_config()
-
-    def _validate_latebound_config(self):
-        """Validate that the late-bound config is present before using the plugin.
-
-        This isn't strictly necessary, but can help with debugging since there are so many config fields that must
-        be present.
-        """
-        latebound_variables = [
-            "openai_api_key",
-        ]
-        for varname in latebound_variables:
-            val = getattr(self.config, varname)
-            if val is None or not val:
-                raise SteamshipError(message=f"The {varname} parameter was not found but is required for operation.")
-
+    def __init__(
+            self,
+            client: Steamship = None,
+            config: Dict[str, Any] = None,
+            context: InvocationContext = None,
+    ):
+        super().__init__(client, config, context)
 
     @classmethod
     def config_cls(cls) -> Type[Config]:
-        return PromptGenerationTrainablePluginConfig
+        return PromptGenerationTrainablePlugin.PromptGenerationTrainablePluginConfig
 
     def model_cls(self) -> Type[OpenAIModel]:
         return OpenAIModel
@@ -107,5 +106,4 @@ class PromptGenerationTrainablePlugin(TrainableTagger):
             train_plugin_output_response.data["archive_path"] = archive_path_in_steamship
 
         return train_plugin_output_response
-
 

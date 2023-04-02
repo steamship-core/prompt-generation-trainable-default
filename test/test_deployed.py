@@ -12,7 +12,6 @@ from steamship.plugin.inputs.training_parameter_plugin_input import \
 
 PLUGIN_HANDLE = "prompt-generation-trainable-default"
 EXPORTER_HANDLE = "signed-url-exporter-1.0"
-KEYWORDS = ["product", "coupon"]
 
 def create_example_blocks() -> [Block]:
     blocks = []
@@ -37,7 +36,7 @@ def test_e2e_trainable_tagger_lambda_training():
 
     trainable_tagger = client.use_plugin(
         plugin_handle=PLUGIN_HANDLE,
-        version='0.0.18',
+        version='0.0.22',
         config=config,
     )
 

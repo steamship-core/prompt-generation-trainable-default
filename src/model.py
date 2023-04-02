@@ -235,14 +235,14 @@ class OpenAIModel(TrainableModel):
                 message="No fine_tuned_model_name was found in model parameter file. Has the model been trained?"
             )
         request_file = request.data.file
-        output = BlockAndTagPluginOutput(file=File.CreateRequest(id=request_file.id), tags=[])
+        output = BlockAndTagPluginOutput(file=File(id=request_file.id), tags=[])
         for block in request.data.file.blocks:
             text = block.text
             generated_texts = self._generate_texts_for(text)
-            tags = [Tag.CreateRequest(kind=TagKind.GENERATION, name=GenerationTag.PROMPT_COMPLETION,
+            tags = [Tag(kind=TagKind.GENERATION, name=GenerationTag.PROMPT_COMPLETION,
                                       value={TagValueKey.STRING_VALUE: generated_text})
                     for generated_text in generated_texts]
-            output_block = Block.CreateRequest(id=block.id, tags=tags)
+            output_block = Block(id=block.id, tags=tags)
             output.file.blocks.append(output_block)
 
         return InvocableResponse(data=output)
